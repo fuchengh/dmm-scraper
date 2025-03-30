@@ -1,5 +1,8 @@
 # 配置文件
 
+[input]
+path = "."
+
 [output]
 path = 'output/{year}/{num}'
 needCut = true

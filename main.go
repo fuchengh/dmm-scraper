@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -50,7 +49,7 @@ func main() {
 
 	scraper.Setup(conf)
 
-	files, err := ioutil.ReadDir(".")
+	files, err := os.ReadDir(conf.Input.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,10 +126,14 @@ func main() {
 
 				log.Infof("%s moving video file to: %s", s.GetType(), outputPath)
 				// if file exist no overwrite
-				err = MoveFile(f.Name(), outputPath, num, 1)
+				filePath := path.Join(conf.Input.Path, f.Name())
+				err = MoveFile(filePath, outputPath, num, 1)
 				if err != nil {
 					log.Error(err)
+					break
 				}
+
+				log.Infof("-------- Done: %s --------", s.GetFormatNumber())
 				break
 			}
 		}

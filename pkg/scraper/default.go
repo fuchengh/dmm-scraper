@@ -3,6 +3,7 @@ package scraper
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -30,6 +31,10 @@ func (DefaultScraper) GetPlot() string {
 }
 
 func (DefaultScraper) GetTitle() string {
+	return ""
+}
+
+func (DefaultScraper) GetRating() string {
 	return ""
 }
 
@@ -106,7 +111,7 @@ func (s *DefaultScraper) GetDocFromURL(u string) (err error) {
 		return err
 	}
 
-	bodyBytes, _ := ioutil.ReadAll(res.Body)
+	bodyBytes, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 
 	r, name, certain, err := myclient.ToUtf8Encoding(ioutil.NopCloser(bytes.NewBuffer(bodyBytes)))
@@ -148,8 +153,18 @@ func (s *DefaultScraper) GetAvailableUrl(orginUrl string) (string, error) {
 // GetOutputPath ...
 func GetOutputPath(s Scraper, conf string) string {
 	p := strings.Replace(conf, "{year}", s.GetYear(), 1)
-	if len(s.GetActors()) > 0 {
-		p = strings.Replace(p, "{actor}", s.GetActors()[0], 1)
+	actors := s.GetActors()
+	if len(actors) > 0 {
+		actorList := make([]string, 0)
+		for _, actor := range actors {
+			actorList = append(actorList, actor)
+			if (len(actorList) >= 5) {
+				actorList = append(actorList, "...")
+				break
+			}
+		}
+		actorDir := strings.Join(actorList, ",")
+		p = strings.Replace(p, "{actor}", actorDir, 1)
 	} else {
 		p = strings.Replace(p, "{actor}", "", 1)
 	}

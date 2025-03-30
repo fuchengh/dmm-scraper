@@ -1,8 +1,10 @@
 package scraper
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -71,7 +73,7 @@ func (s *DMMScraper) GetPlot() string {
 	if s.doc == nil {
 		return ""
 	}
-	val, _ := s.doc.Find("meta[property=\"og:description\"]").Attr("content")
+	val := s.doc.Find("div[class=\"mg-b20 lh4\"] p[class=\"mg-b20\"]").Text()
 	return val
 }
 
@@ -79,7 +81,7 @@ func (s *DMMScraper) GetTitle() string {
 	if s.doc == nil {
 		return ""
 	}
-	val, _ := s.doc.Find("meta[property=\"og:title\"]").Attr("content")
+	val := s.doc.Find("h1#title.item.fn").Text()
 	return val
 }
 
@@ -88,6 +90,14 @@ func (s *DMMScraper) GetDirector() string {
 		return ""
 	}
 	return getDmmTableValue("監督", s.doc)
+}
+
+func (s *DMMScraper) GetRating() string {
+	if s.doc == nil {
+		return ""
+	}
+	val := s.doc.Find("p.dcd-review__average strong").Text()
+	return val
 }
 
 func (s *DMMScraper) GetRuntime() string {
@@ -121,13 +131,51 @@ func (s *DMMScraper) GetMaker() string {
 	return getDmmTableValue("メーカー", s.doc)
 }
 
+func (s *DMMScraper) FetchAllActors() (actors []string) {
+	actors = make([]string, 0)
+
+	const baseUrl = "https://www.dmm.co.jp/mono/dvd/-/detail/performer/=/cid="
+	cid := s.GetNumber()
+
+	searchUrl := fmt.Sprintf("%s%s/", baseUrl, cid)
+
+	// Send the request
+	resp, err := client.Get(searchUrl, s.cookie)
+	if err != nil {
+		log.Errorf("Error sending request: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(bodyBytes))
+		if err != nil {
+			log.Errorf("Error parsing HTML: %v", err)
+			return
+		}
+		doc.Find("a[href^='/mono/dvd/-/list/=/article=actress/id=']").Each(func(i int, s *goquery.Selection) {
+			actorName := s.Text()
+			actors = append(actors, actorName)
+		})
+	}
+	return
+}
+
 func (s *DMMScraper) GetActors() (actors []string) {
 	if s.doc == nil {
 		return
 	}
-	s.doc.Find("#performer a").Each(func(i int, s *goquery.Selection) {
-		actors = append(actors, s.Text())
-	})
+	if showMore := s.doc.Find("a[id=\"a_performer\"]"); showMore.Length() > 0 {
+		actors = s.FetchAllActors()
+	} else {
+		s.doc.Find("#performer a").Each(func(i int, s *goquery.Selection) {
+			actors = append(actors, s.Text())
+		})
+	}
 	return
 }
 

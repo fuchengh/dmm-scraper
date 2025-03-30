@@ -6,6 +6,10 @@ type Output struct {
 	NeedCut bool
 }
 
+type Input struct {
+	Path string
+}
+
 // Proxy returns the configuration of proxy
 type Proxy struct {
 	Enable bool
@@ -20,6 +24,7 @@ type DMMApi struct {
 
 // Configs ...
 type Configs struct {
+	Input  Input
 	Output Output
 	Proxy  Proxy
 	DMMApi DMMApi
@@ -28,6 +33,9 @@ type Configs struct {
 // Default ...
 func Default() *Configs {
 	return &Configs{
+		Input: Input{
+			Path: ".",
+		},
 		Output: Output{
 			Path:    "output/{year}/{num}",
 			NeedCut: true,

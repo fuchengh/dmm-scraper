@@ -3,16 +3,16 @@ package client
 import (
 	"bufio"
 	"bytes"
+	"io"
+
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/transform"
-	"io"
-	"io/ioutil"
 )
 
 func ToUtf8Encoding(body io.Reader) (r io.Reader, name string, certain bool, err error) {
 
-	b, err := ioutil.ReadAll(body)
+	b, err := io.ReadAll(body)
 	if err != nil {
 		return
 	}

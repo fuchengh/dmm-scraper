@@ -9,22 +9,23 @@ import (
 )
 
 type EmbyMovie struct {
-	XMLName   xml.Name         `xml:"movie"`
-	Plot      string           `xml:"plot"`
-	Outline   string           `xml:"outline"`
-	Title     string           `xml:"title"`
-	Director  string           `xml:"director"`
-	Year      string           `xml:"year"`
-	Premiered string           `xml:"premiered"`
-	Runtime   string           `xml:"runtime"`
-	Genre     []string         `xml:"genre"`
-	Studio    string           `xml:"studio"`
-	Tag       []string         `xml:"tag"`
-	Actor     []EmbyMovieActor `xml:"actor"`
-	Label     string           `xml:"label"`
-	Num       string           `xml:"num"`
-	Cover     string           `xml:"cover"`
-	Website   string           `xml:"website"`
+	XMLName       xml.Name         `xml:"movie"`
+	Title         string           `xml:"title"`
+	OriginalTitle string           `xml:"originaltitle"`
+	Rating        string           `xml:"rating,omitempty"`
+	Plot          string           `xml:"plot"`
+	Director      string           `xml:"director"`
+	Year          string           `xml:"year"`
+	Premiered     string           `xml:"premiered"`
+	Runtime       string           `xml:"runtime"`
+	Genre         []string         `xml:"genre"`
+	Studio        string           `xml:"studio"`
+	Tag           []string         `xml:"tag"`
+	Actor         []EmbyMovieActor `xml:"actor"`
+	Label         string           `xml:"label"`
+	Num           string           `xml:"num"`
+	Cover         string           `xml:"cover"`
+	Website       string           `xml:"website"`
 	// Ratings   *EmbyMovieRatings `xml:"ratings,omitempty"`
 }
 
@@ -88,19 +89,21 @@ func newEmbyMovieActors(names []string) []EmbyMovieActor {
 // NewMovieNfo ...
 func NewMovieNfo(s scraper.Scraper) MovieNfo {
 	return &EmbyMovie{
-		Plot:      s.GetPlot(),
-		Title:     s.GetTitle(),
-		Director:  s.GetDirector(),
-		Year:      s.GetYear(),
-		Premiered: s.GetPremiered(),
-		Runtime:   s.GetRuntime(),
-		Genre:     s.GetTags(),
-		Tag:       append(s.GetTags(), s.GetSeries(), s.GetLabel(), s.GetMaker(), s.GetDirector()),
-		Studio:    s.GetMaker(),
-		Label:     s.GetLabel(),
-		Actor:     newEmbyMovieActors(s.GetActors()),
-		Cover:     s.GetCover(),
-		Num:       s.GetNumber(),
-		Website:   s.GetWebsite(),
+		Plot:          s.GetPlot(),
+		OriginalTitle: s.GetTitle(),
+		Title:         s.GetTitle(),
+		Rating:        s.GetRating(),
+		Director:      s.GetDirector(),
+		Year:          s.GetYear(),
+		Premiered:     s.GetPremiered(),
+		Runtime:       s.GetRuntime(),
+		Genre:         s.GetTags(),
+		Tag:           append(s.GetTags(), s.GetSeries(), s.GetLabel(), s.GetMaker(), s.GetDirector()),
+		Studio:        s.GetMaker(),
+		Label:         s.GetLabel(),
+		Actor:         newEmbyMovieActors(s.GetActors()),
+		Cover:         s.GetCover(),
+		Num:           s.GetNumber(),
+		Website:       s.GetWebsite(),
 	}
 }

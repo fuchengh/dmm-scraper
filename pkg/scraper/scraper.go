@@ -12,6 +12,7 @@ type Scraper interface {
 	FetchDoc(query string) (err error)
 	GetPlot() string
 	GetTitle() string
+	GetRating() string
 	GetDirector() string
 	GetRuntime() string
 	GetTags() []string
