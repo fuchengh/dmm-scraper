@@ -104,7 +104,8 @@ func (s *DMMScraper) GetRuntime() string {
 	if s.doc == nil {
 		return ""
 	}
-	return getDmmTableValue("収録時間", s.doc)
+	time := getDmmTableValue("収録時間", s.doc)
+	return strings.Replace(time, "分", "", 1)
 }
 
 func (s *DMMScraper) GetTags() (tags []string) {
@@ -169,7 +170,7 @@ func (s *DMMScraper) GetActors() (actors []string) {
 	if s.doc == nil {
 		return
 	}
-	if showMore := s.doc.Find("a[id=\"a_performer\"]"); showMore.Length() > 0 {
+	if showMore := s.doc.Find("a[id=\"a_performer\"]:contains(\"▼すべて表示する\")"); showMore.Length() > 0 {
 		actors = s.FetchAllActors()
 	} else {
 		s.doc.Find("#performer a").Each(func(i int, s *goquery.Selection) {
@@ -232,10 +233,6 @@ func (s *DMMScraper) GetSeries() string {
 		return ""
 	}
 	return getDmmTableValue("シリーズ", s.doc)
-}
-
-func (s *DMMScraper) NeedCut() bool {
-	return needCut
 }
 
 func getDmmTableValue(key string, doc *goquery.Document) (val string) {

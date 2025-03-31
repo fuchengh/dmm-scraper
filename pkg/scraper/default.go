@@ -97,10 +97,6 @@ func (DefaultScraper) GetType() string {
 	return ""
 }
 
-func (DefaultScraper) NeedCut() bool {
-	return needCut
-}
-
 func (s *DefaultScraper) GetDocFromURL(u string) (err error) {
 	log.Infof("fetching %s", u)
 	if s.cookie == nil {

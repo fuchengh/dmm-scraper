@@ -27,14 +27,12 @@ type Scraper interface {
 	GetYear() string
 	GetSeries() string
 	GetType() string
-	NeedCut() bool
 }
 
 var (
 	client            myclient.Client
 	log               logger.Logger
 	dmmProductService *api.ProductService
-	needCut           bool
 )
 
 // Setup ...
@@ -50,5 +48,4 @@ func Setup(conf *config.Configs) {
 	if conf.DMMApi.ApiId != "" && conf.DMMApi.AffiliateId != "" {
 		dmmProductService = api.NewProductService(conf.DMMApi.AffiliateId, conf.DMMApi.ApiId)
 	}
-	needCut = conf.Output.NeedCut
 }

@@ -27,6 +27,8 @@ func TestDMMScraper_FetchDoc(t *testing.T) {
 			t.Logf("GetPlot() = %v", got)
 			got = s.GetTitle()
 			t.Logf("GetTitle() = %v", got)
+			got = s.GetRating()
+			t.Logf("GetRating() = %v", got)
 			got = s.GetCover()
 			t.Logf("GetCover() = %v", got)
 		})

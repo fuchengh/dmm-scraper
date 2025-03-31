@@ -127,7 +127,3 @@ func (s *DMMApiScraper) GetSeries() string {
 func (s *DMMApiScraper) GetWebsite() string {
 	return s.Item.URL
 }
-
-func (s *DMMApiScraper) NeedCut() bool {
-	return needCut
-}

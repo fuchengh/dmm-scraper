@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	posterWidth = 378
+	ratio = 1.42
 )
 
 func isValidVideo(ext string) bool {
@@ -96,24 +97,26 @@ func main() {
 
 				// build nfo
 				movieNfo := metadata.NewMovieNfo(s)
-				poster := fmt.Sprintf("%s.jpg", num)
+				cover := fmt.Sprintf("%s-fanart.jpg", num)
+				poster := fmt.Sprintf("%s-poster.jpg", num)
 				// movieNfo.SetPoster(poster)
 				movieNfo.SetTitle(num)
 
+				coverPath := path.Join(outputPath, cover)
 				posterPath := path.Join(outputPath, poster)
-				err = scraper.Download(s.GetCover(), posterPath, MyProgress(log, s.GetType(), poster))
+				err = scraper.Download(s.GetCover(), coverPath, MyProgress(log, s.GetType(), cover))
 				if err != nil {
 					log.Error(err)
 					break
 				}
 
-				if s.NeedCut() {
-					log.Infof("%s cropping poster: %s", s.GetType(), posterPath)
-					imgOperation := img.NewOperation()
-					err = imgOperation.CropAndSave(posterPath, posterPath, posterWidth, 0)
-					if err != nil {
-						log.Error(err)
-					}
+				imgOperation := img.NewOperation()
+				// calculate posterWidth based on cover width
+				posterWidth, _ := getPosterWidth(coverPath, ratio)
+				err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
+				if err != nil {
+					log.Errorf("Crop image failed: %v", err)
+					break
 				}
 
 				nfo := path.Join(outputPath, fmt.Sprintf("%s.nfo", num))
@@ -133,7 +136,7 @@ func main() {
 					break
 				}
 
-				log.Infof("-------- Done: %s --------", s.GetFormatNumber())
+				log.Infof("-------- Done: %s --------", num)
 				break
 			}
 		}
@@ -157,4 +160,27 @@ func MoveFile(oldPath, outputPath, num string, index int) error {
 		return MoveFile(oldPath, outputPath, num, index)
 	}
 	return os.Rename(oldPath, newPath)
+}
+
+func getPosterWidth(fanartPath string, ratio float64) (height int, width int) {
+	if reader, err := os.Open(fanartPath); err == nil {
+		defer reader.Close()
+		im, _, err := image.Decode(reader)
+		if err != nil {
+			return 378, 0
+		}
+
+		var posterH, posterW int
+
+		fanartH, fanartW := im.Bounds().Dy(), im.Bounds().Dx()
+		if float64(fanartH)/float64(fanartW) < ratio {
+			posterW = int(float64(fanartH) / ratio)
+			posterH = fanartH
+		} else {
+			posterW = fanartW
+			posterH = int(float64(fanartW) * ratio)
+		}
+		return posterW, posterH
+	}
+	return 378, 0
 }

@@ -66,7 +66,3 @@ func (s *FanzaScraper) FetchDoc(query string) (err error) {
 
 	return s.GetDocFromURL(detail)
 }
-
-func (s *FanzaScraper) NeedCut() bool {
-	return needCut
-}

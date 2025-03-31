@@ -3,7 +3,6 @@ package config
 // Output returns the configuration of output
 type Output struct {
 	Path    string
-	NeedCut bool
 }
 
 type Input struct {
@@ -38,7 +37,6 @@ func Default() *Configs {
 		},
 		Output: Output{
 			Path:    "output/{year}/{num}",
-			NeedCut: true,
 		},
 		Proxy: Proxy{
 			Enable: false,
