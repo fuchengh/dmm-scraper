@@ -34,6 +34,10 @@ func (DefaultScraper) GetTitle() string {
 	return ""
 }
 
+func (DefaultScraper) GetTranslatedTitle() string {
+	return ""
+}
+
 func (DefaultScraper) GetRating() string {
 	return ""
 }

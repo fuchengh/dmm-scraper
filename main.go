@@ -115,8 +115,7 @@ func main() {
 				movieNfo := metadata.NewMovieNfo(s)
 				cover := fmt.Sprintf("%s-fanart.jpg", num)
 				poster := fmt.Sprintf("%s-poster.jpg", num)
-				// movieNfo.SetPoster(poster)
-				movieNfo.SetTitle(num)
+				// movieNfo.SetTitle(num)
 
 				// Get fanart and poster
 				coverPath := path.Join(outputPath, cover)

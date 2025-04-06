@@ -91,7 +91,7 @@ func NewMovieNfo(s scraper.Scraper) MovieNfo {
 	return &EmbyMovie{
 		Plot:          s.GetPlot(),
 		OriginalTitle: s.GetTitle(),
-		Title:         s.GetTitle(),
+		Title:         s.GetTranslatedTitle(),
 		Rating:        s.GetRating(),
 		Director:      s.GetDirector(),
 		Year:          s.GetYear(),

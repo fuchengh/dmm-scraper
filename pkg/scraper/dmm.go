@@ -125,7 +125,59 @@ func (s *DMMScraper) GetPlot() string {
 		return ""
 	}
 	val := s.doc.Find("div[class=\"mg-b20 lh4\"] p[class=\"mg-b20\"]").Text()
+	if val == "" {
+		// try to get from the div tag if the p tag is empty
+		tmp_html, _ := s.doc.Find("div[class=\"mg-b20 lh4\"]").Html()
+
+		// Find the first <a> tag and get everything before it
+		if idx := strings.Index(tmp_html, "<a href"); idx != -1 {
+			tmp_html = tmp_html[:idx]
+		}
+
+		// Replace <br> tags with newlines
+		tmp_html = strings.ReplaceAll(tmp_html, "<br>", "\n")
+
+		// Clean up any remaining HTML tags
+		re := regexp.MustCompile(`<[^>]*>`)
+		val = re.ReplaceAllString(tmp_html, "")
+
+		// Clean up extra whitespace and newlines
+		val = strings.TrimSpace(val)
+		// Replace multiple newlines with single newline
+		re = regexp.MustCompile(`\n\s*\n`)
+		val = re.ReplaceAllString(val, "\n")
+	}
+
+	if ts.Enable {
+		log.Infof("Translating plot for %s...", s.GetFormatNumber())
+		res, err := ts.Translate(val)
+		if err != nil {
+			log.Errorf("Error translating plot: %v", err)
+			return val
+		}
+		return res
+	}
+
 	return val
+}
+
+func (s *DMMScraper) GetTranslatedTitle() string {
+	if s.doc == nil {
+		return ""
+	}
+	val := s.doc.Find("h1#title.item.fn").Text()
+
+	if ts.Enable {
+		log.Infof("Translating title for %s...", s.GetFormatNumber())
+		res, err := ts.Translate(val)
+		if err != nil {
+			log.Errorf("Error translating title: %v", err)
+			return fmt.Sprintf("%s %s", s.GetFormatNumber(), val)
+		}
+		return fmt.Sprintf("%s %s", s.GetFormatNumber(), res)
+	}
+
+	return fmt.Sprintf("%s %s", s.GetFormatNumber(), val)
 }
 
 func (s *DMMScraper) GetTitle() string {

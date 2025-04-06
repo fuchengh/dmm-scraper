@@ -21,12 +21,24 @@ type DMMApi struct {
 	AffiliateId string
 }
 
+type Translate struct {
+	Enable      bool
+	ApiUrl      string
+	ApiKey      string
+	Model       string
+	Temparature float64
+	TopP        float64
+	MaxTokens   int64
+	SystemPrompt string
+}
+
 // Configs ...
 type Configs struct {
 	Input  Input
 	Output Output
 	Proxy  Proxy
 	DMMApi DMMApi
+	Translate Translate
 }
 
 // Default ...
@@ -45,6 +57,16 @@ func Default() *Configs {
 		DMMApi: DMMApi{
 			ApiId:       "",
 			AffiliateId: "",
+		},
+		Translate: Translate{
+			Enable: false,
+			ApiUrl: "",
+			ApiKey: "",
+			Model: "",
+			Temparature: 0.0,
+			TopP: 0.0,
+			MaxTokens: 0,
+			SystemPrompt: "",
 		},
 	}
 }

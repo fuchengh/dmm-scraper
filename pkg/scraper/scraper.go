@@ -4,6 +4,7 @@ import (
 	myclient "dmm-scraper/pkg/client"
 	"dmm-scraper/pkg/config"
 	"dmm-scraper/pkg/logger"
+	translateClient "dmm-scraper/pkg/translate"
 	"dmm-scraper/third_party/dmm-go-sdk/api"
 )
 
@@ -12,6 +13,7 @@ type Scraper interface {
 	FetchDoc(query string) (err error)
 	GetPlot() string
 	GetTitle() string
+	GetTranslatedTitle() string
 	GetRating() string
 	GetDirector() string
 	GetRuntime() string
@@ -34,6 +36,7 @@ var (
 	client            myclient.Client
 	log               logger.Logger
 	dmmProductService *api.ProductService
+	ts 		  *translateClient.Client
 )
 
 // Setup ...
@@ -48,5 +51,12 @@ func Setup(conf *config.Configs) {
 	}
 	if conf.DMMApi.ApiId != "" && conf.DMMApi.AffiliateId != "" {
 		dmmProductService = api.NewProductService(conf.DMMApi.AffiliateId, conf.DMMApi.ApiId)
+	}
+	if conf.Translate.Enable {
+		ts =  translateClient.New()
+		err := ts.InitTranslateApi(&conf.Translate)
+		if err != nil {
+			log.Errorf("Error init translate api, %s", err)
+		}
 	}
 }
