@@ -13,6 +13,8 @@ import (
 	"dmm-scraper/pkg/logger"
 	"dmm-scraper/pkg/metadata"
 	"dmm-scraper/pkg/scraper"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 var (
@@ -32,8 +34,21 @@ func isValidVideo(ext string) bool {
 }
 
 func MyProgress(l logger.Logger, sType, filename string) func(current, total int64) {
+	bar := progressbar.NewOptions64(100,
+		progressbar.OptionSetWidth(20),
+		progressbar.OptionSetDescription(fmt.Sprintf("[light_blue]Download[reset] %s", filename)),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionOnCompletion(func() {
+			fmt.Println()
+		}),
+	)
+
 	return func(current, total int64) {
-		l.Infof(fmt.Sprintf("%s downloading %s ... %f%%", sType, filename, float32(current)/float32(total)*100))
+		if total == 0 {
+			return
+		}
+		percentage := float64(current * 100 / total) 
+		bar.Set64(int64(percentage))
 	}
 }
 
@@ -62,14 +77,15 @@ func main() {
 		if !isValidVideo(ext) {
 			continue
 		}
-		log.Infof("Check file: %s", f.Name())
+
+		log.Infof("-------- Found movie ID: %s --------", f.Name())
 		name := strings.TrimSuffix(f.Name(), ext)
 
 		// 用正则处理文件名
 		if query, scrapers := scraper.GetQuery(name); query != "" {
 
 			for _, s := range scrapers {
-				log.Infof("%s capturing query: %s", s.GetType(), query)
+				log.Debugf("%s capturing query: %s", s.GetType(), query)
 
 				// fetch
 				err = s.FetchDoc(query)
@@ -84,11 +100,11 @@ func main() {
 				}
 
 				num := s.GetFormatNumber()
-				log.Infof("%s get num %s format: %s", s.GetType(), s.GetNumber(), num)
+				log.Infof("%s parsing movie ID %s ", s.GetType(), num)
 
 				// mkdir
 				outputPath := scraper.GetOutputPath(s, conf.Output.Path)
-				log.Infof("%s making output path: %s", s.GetType(), outputPath)
+				log.Debugf("%s making output path: %s", s.GetType(), outputPath)
 				err = os.MkdirAll(outputPath, 0700)
 				if err != nil && !os.IsExist(err) {
 					log.Error(err)
@@ -102,6 +118,7 @@ func main() {
 				// movieNfo.SetPoster(poster)
 				movieNfo.SetTitle(num)
 
+				// Get fanart and poster
 				coverPath := path.Join(outputPath, cover)
 				posterPath := path.Join(outputPath, poster)
 				err = scraper.Download(s.GetCover(), coverPath, MyProgress(log, s.GetType(), cover))
@@ -109,25 +126,38 @@ func main() {
 					log.Error(err)
 					break
 				}
-
-				imgOperation := img.NewOperation()
-				// calculate posterWidth based on cover width
-				posterWidth, _ := getPosterWidth(coverPath, ratio)
-				err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
-				if err != nil {
-					log.Errorf("Crop image failed: %v", err)
-					break
+				// Get poster
+				// first, check if we can get poster from website
+				err = scraper.Download(s.GetPoster(), posterPath, MyProgress(log, s.GetType(), poster))
+				if err != nil || !img.ValidPosterProportion(posterPath) {
+					// fallback to crop from cover
+					log.Warnf("%s failed to fetch cover, crop from fanart", s.GetType())
+					imgOperation := img.NewOperation()
+					// calculate posterWidth based on cover width
+					posterWidth, _ := getPosterWidth(coverPath, ratio)
+					err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
+					if err != nil {
+						log.Errorf("Failed to get poster: %v", err)
+						break
+					}
 				}
 
 				nfo := path.Join(outputPath, fmt.Sprintf("%s.nfo", num))
-				log.Infof("%s writing nfo file: %s", s.GetType(), nfo)
+				log.Debugf("%s writing nfo file: %s", s.GetType(), nfo)
 				err = movieNfo.Save(nfo)
 				if err != nil {
 					log.Error(err)
 					break
 				}
 
-				log.Infof("%s moving video file to: %s", s.GetType(), outputPath)
+				// do not move if file is already exist
+				fileExist := path.Join(outputPath, f.Name())
+				if _, err := os.Stat(fileExist); err == nil {
+					log.Infof("%s file already exist: %s, skip moving", s.GetType(), fileExist)
+					break
+				}
+
+				log.Debugf("%s moving video file to: %s", s.GetType(), outputPath)
 				// if file exist no overwrite
 				filePath := path.Join(conf.Input.Path, f.Name())
 				err = MoveFile(filePath, outputPath, num, 1)
@@ -136,7 +166,6 @@ func main() {
 					break
 				}
 
-				log.Infof("-------- Done: %s --------", num)
 				break
 			}
 		}

@@ -74,6 +74,10 @@ func (DefaultScraper) GetCover() string {
 	return ""
 }
 
+func (DefaultScraper) GetPoster() string {
+	return ""
+}
+
 func (s *DefaultScraper) GetWebsite() string {
 	if s.doc == nil {
 		return ""
@@ -98,7 +102,7 @@ func (DefaultScraper) GetType() string {
 }
 
 func (s *DefaultScraper) GetDocFromURL(u string) (err error) {
-	log.Infof("fetching %s", u)
+	log.Debugf("Scraper: fetching doc from url %s", u)
 	if s.cookie == nil {
 		s.cookie = &http.Cookie{}
 	}
@@ -114,7 +118,7 @@ func (s *DefaultScraper) GetDocFromURL(u string) (err error) {
 	if err != nil {
 		return err
 	}
-	log.Infof("detect content %s %v", name, certain)
+	log.Debugf("detect content %s %v", name, certain)
 	switch name {
 	case "utf-8":
 		s.doc, err = goquery.NewDocumentFromReader(r)

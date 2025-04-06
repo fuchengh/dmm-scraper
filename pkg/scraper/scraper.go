@@ -22,6 +22,7 @@ type Scraper interface {
 	GetNumber() string
 	GetFormatNumber() string
 	GetCover() string
+	GetPoster() string
 	GetWebsite() string
 	GetPremiered() string
 	GetYear() string

@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 
 const (
 	dmmMonoSearchUrl = "https://www.dmm.co.jp/mono/dvd/-/search/=/searchstr=%s/"
+	dmmListSearchUrl = "https://www.dmm.co.jp/search/=/searchstr=%s/"
 )
 
 type DMMScraper struct {
@@ -23,6 +23,57 @@ type DMMScraper struct {
 
 func (s *DMMScraper) GetType() string {
 	return "DMMScraper"
+}
+
+func (s *DMMScraper) FetchDocFromListSearch(query string) (err error) {
+	s.cookie = &http.Cookie{
+		Name:    "age_check_done",
+		Value:   "1",
+		Path:    "/",
+		Domain:  "dmm.co.jp",
+		Expires: time.Now().Add(1 * time.Hour),
+	}
+
+	// Using list search to try to get the detail page
+	err = s.GetDocFromURL(fmt.Sprintf(dmmListSearchUrl, query))
+
+	if err != nil {
+		log.Errorf("%s fallback search [movie %s] failed: %v", s.GetType(), query, err)
+		return err
+	}
+
+	var hrefs []string
+	re := regexp.MustCompile(`https://www\.dmm\.co\.jp/digital/videoa/-/detail/=/cid=(?:[^/]+)/`)
+	s.doc.Find("script").Each(func(i int, s *goquery.Selection) {
+		scriptText := s.Text()
+		matches := re.FindAllStringSubmatch(scriptText, -1)
+		for _, match := range matches {
+			// check if this is a valid http link
+			if len(match) > 0 {
+				href := match[0]
+				if strings.Contains(href, "cid=") && strings.Contains(href, "/digital/videoa/-/detail/") && strings.Contains(href, "https://") {
+					hrefs = append(hrefs, href)
+				}
+			}
+		}
+	})
+
+	if len(hrefs) == 0 {
+		log.Errorf("%s fallback search [movie %s] failed: no movie found", s.GetType(), query)
+		return fmt.Errorf("no movie found for query: %s", query)
+	}
+
+	var detail string
+	for _, href := range hrefs {
+		if isURLMatchQuery(href, query) {
+			detail = href
+		}
+	}
+	if detail == "" {
+		return fmt.Errorf("unable to match in hrefs %v", hrefs)
+	}
+
+	return s.GetDocFromURL(detail)
 }
 
 // FetchDoc search once or twice to get a detail page
@@ -43,7 +94,7 @@ func (s *DMMScraper) FetchDoc(query string) (err error) {
 	}
 	err = s.GetDocFromURL(fmt.Sprintf(dmmMonoSearchUrl, query))
 	if err != nil {
-		return err
+		return s.FetchDocFromListSearch(query)
 	}
 
 	var hrefs []string
@@ -53,7 +104,7 @@ func (s *DMMScraper) FetchDoc(query string) (err error) {
 	})
 
 	if len(hrefs) == 0 {
-		return errors.New("record not found")
+		return s.FetchDocFromListSearch(query)
 	}
 
 	var detail string
@@ -208,6 +259,55 @@ func (s *DMMScraper) GetCover() string {
 	}
 	img, _ := s.doc.Find("meta[property=\"og:image\"]").Attr("content")
 	return strings.Replace(img, "ps.jpg", "pl.jpg", 1)
+}
+
+func ValidPoster(posterUrl string) bool {
+
+	// check if we are being redirected to a different page
+	resp, err := client.Get(posterUrl, &http.Cookie{
+		Name:    "age_check_done",
+		Value:   "1",
+		Path:    "/",
+		Domain:  "dmm.co.jp",
+		Expires: time.Now().Add(1 * time.Hour),
+	})
+
+	if err != nil {
+		log.Errorf("Error sending request: %v", err)
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return (resp.Request.URL.String() == posterUrl)
+	}
+	return false
+}
+
+func (s *DMMScraper) GetPoster() string {
+	if s.doc == nil {
+		return ""
+	}
+	poster := fmt.Sprintf("https://pics.dmm.co.jp/digital/video/%s/%sjp-1.jpg", s.GetNumber(), s.GetNumber())
+
+	// check if we are being redirected to a different page
+	if ValidPoster(poster) {
+		return poster
+	}
+
+	// Try with fallback cid
+	l, i := GetLabelNumber(s.GetNumber())
+	if l == ""  || i == 0 {
+		return ""
+	}
+	cid := fmt.Sprintf("%s%05d", l, i)
+	fallback_poster := fmt.Sprintf("https://pics.dmm.co.jp/digital/video/%s/%sjp-1.jpg", cid, cid)
+	if ValidPoster(fallback_poster) {
+		return fallback_poster
+	}
+	// Not found, crop from cover
+	return ""
 }
 
 func (s *DMMScraper) GetPremiered() (rel string) {

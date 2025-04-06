@@ -1,6 +1,9 @@
 package img
 
-import "image"
+import (
+	"image"
+	"os"
+)
 
 // Operation ...
 type Operation interface {
@@ -13,4 +16,26 @@ type Operation interface {
 // NewOperation ...
 func NewOperation() Operation {
 	return &Imaging{}
+}
+
+func ValidPosterProportion(imgPath string) bool {
+	if reader, err := os.Open(imgPath); err == nil {
+		defer reader.Close()
+		im, _, err := image.Decode(reader)
+		if err != nil {
+			return false
+		}
+
+		width := im.Bounds().Dx()
+		height := im.Bounds().Dy()
+
+		if width == 0 || height == 0 {
+			return false
+		}
+		if width > height {
+			return false
+		}
+		return (1.3 < float64(height)/float64(width) && float64(height)/float64(width) < 1.6)
+	}
+	return false
 }
