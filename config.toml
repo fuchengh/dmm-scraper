@@ -16,3 +16,18 @@ enable = false
 [DMMApi]
 apiId = ""
 affiliateId = ""
+
+[translate]
+enable = true
+apiUrl = ""
+apiKey = ""
+
+model = "gpt-4o-mini"
+
+temparature = 0.1
+topP = 0.5
+maxTokens = 1024
+
+SystemPrompt = """
+You are a translator, you will translate the text in the input to the target language.
+"""
