@@ -14,6 +14,7 @@ import (
 	"dmm-scraper/pkg/metadata"
 	"dmm-scraper/pkg/scraper"
 
+	"github.com/imroc/req/v3"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -33,7 +34,7 @@ func isValidVideo(ext string) bool {
 	return false
 }
 
-func MyProgress(l logger.Logger, sType, filename string) func(current, total int64) {
+func MyProgress(l logger.Logger, sType, filename string) func(info req.DownloadInfo) {
 	bar := progressbar.NewOptions64(100,
 		progressbar.OptionSetWidth(20),
 		progressbar.OptionSetDescription(fmt.Sprintf("[light_blue]Download[reset] %s", filename)),
@@ -43,10 +44,18 @@ func MyProgress(l logger.Logger, sType, filename string) func(current, total int
 		}),
 	)
 
-	return func(current, total int64) {
-		if total == 0 {
+	return func(info req.DownloadInfo) {
+		if info.Response.StatusCode != 200 {
 			return
 		}
+
+		current := info.DownloadedSize
+		total := info.Response.ContentLength
+
+		if total <= 0 {
+			return
+		}
+
 		percentage := float64(current * 100 / total) 
 		bar.Set64(int64(percentage))
 	}

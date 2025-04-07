@@ -12,6 +12,7 @@ import (
 	myclient "dmm-scraper/pkg/client"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/imroc/req/v3"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
@@ -139,7 +140,7 @@ func (s *DefaultScraper) GetDocFromURL(u string) (err error) {
 }
 
 // Download ...
-func Download(url, filename string, progress func(current, total int64)) error {
+func Download(url, filename string, progress func(info req.DownloadInfo)) error {
 	return client.Download(url, filename, progress)
 }
 

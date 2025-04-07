@@ -3,6 +3,7 @@ package client
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/imroc/req/v3"
 )
@@ -56,9 +57,10 @@ func (rc *ReqClient) Post(url string, v interface{}) (*http.Response, error) {
 }
 
 // Download ...
-func (rc *ReqClient) Download(url, filename string, progress func(current, total int64)) error {
+func (rc *ReqClient) Download(url, filename string, progress func(info req.DownloadInfo)) error {
 	resp, err := rc.client.R().
 		SetOutputFile(filename).
+		SetDownloadCallbackWithInterval(req.DownloadCallback(progress), 100*time.Millisecond).
 		Get(url)
 	if err != nil {
 		return err

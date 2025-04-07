@@ -13,7 +13,7 @@ type Client interface {
 	Get(url string, v interface{}) (*http.Response, error)
 	GetJSON(url string, v interface{}) error
 	Post(url string, v interface{}) (*http.Response, error)
-	Download(url, filename string, progress func(current, total int64)) error
+	Download(url, filename string, progress func(info req.DownloadInfo)) error
 }
 
 // New ...
