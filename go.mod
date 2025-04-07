@@ -9,9 +9,9 @@ require (
 	github.com/chromedp/chromedp v0.9.5
 	github.com/disintegration/imaging v1.6.2
 	github.com/dlclark/regexp2 v1.4.0
+	github.com/dmmlabo/dmm-go-sdk v1.0.1
 	github.com/imroc/req/v3 v3.50.0
 	github.com/kataras/golog v0.1.7
-	github.com/mitchellh/mapstructure v1.1.2
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/spf13/viper v1.6.2
 	golang.org/x/net v0.38.0
@@ -40,6 +40,7 @@ require (
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
+	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.0 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect

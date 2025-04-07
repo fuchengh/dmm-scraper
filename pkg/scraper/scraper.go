@@ -5,7 +5,8 @@ import (
 	"dmm-scraper/pkg/config"
 	"dmm-scraper/pkg/logger"
 	translateClient "dmm-scraper/pkg/translate"
-	"dmm-scraper/third_party/dmm-go-sdk/api"
+
+	"github.com/dmmlabo/dmm-go-sdk/api"
 )
 
 // Scraper is interface

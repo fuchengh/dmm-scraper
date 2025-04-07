@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"dmm-scraper/third_party/dmm-go-sdk/api"
+	"github.com/dmmlabo/dmm-go-sdk/api"
 )
 
 type DMMApiDigitalScraper struct {

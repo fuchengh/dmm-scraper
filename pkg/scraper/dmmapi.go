@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"dmm-scraper/third_party/dmm-go-sdk/api"
+	"github.com/dmmlabo/dmm-go-sdk/api"
 )
 
 type DMMApiScraper struct {
@@ -80,7 +80,7 @@ func (s *DMMApiScraper) GetMaker() string {
 }
 
 func (s *DMMApiScraper) GetActors() (actors []string) {
-	for _, actor := range s.Item.ItemInformation.Actress {
+	for _, actor := range s.Item.ItemInformation.Actors {
 		actors = append(actors, actor.Name)
 	}
 	return
