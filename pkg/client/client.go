@@ -4,22 +4,23 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/imroc/req"
+	"github.com/imroc/req/v3"
 )
 
 // Client ...
 type Client interface {
 	SetProxyUrl(rawurl string) error
-	Get(url string, v ...interface{}) (*http.Response, error)
+	Get(url string, v interface{}) (*http.Response, error)
 	GetJSON(url string, v interface{}) error
-	Post(url string, v ...interface{}) (*http.Response, error)
+	Post(url string, v interface{}) (*http.Response, error)
 	Download(url, filename string, progress func(current, total int64)) error
 }
 
 // New ...
 func New() Client {
 	return &ReqClient{
-		req.New(),
+		client: req.C().
+			SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"),
 	}
 }
 
