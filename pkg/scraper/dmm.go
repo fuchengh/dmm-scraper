@@ -350,7 +350,7 @@ func (s *DMMScraper) GetPoster() string {
 
 	// Try with fallback cid
 	l, i := GetLabelNumber(s.GetNumber())
-	if l == ""  || i == 0 {
+	if l == "" || i == 0 {
 		return ""
 	}
 	cid := fmt.Sprintf("%s%05d", l, i)

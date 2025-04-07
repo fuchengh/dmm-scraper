@@ -15,5 +15,3 @@ type AvailableResp struct {
 const (
 	GetAvailableUrl = "https://archive.org/wayback/available?url=%s"
 )
-
-

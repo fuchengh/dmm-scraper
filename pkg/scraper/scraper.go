@@ -36,7 +36,7 @@ var (
 	client            myclient.Client
 	log               logger.Logger
 	dmmProductService *api.ProductService
-	ts 		  *translateClient.Client
+	ts                *translateClient.Client
 )
 
 // Setup ...
@@ -53,7 +53,7 @@ func Setup(conf *config.Configs) {
 		dmmProductService = api.NewProductService(conf.DMMApi.AffiliateId, conf.DMMApi.ApiId)
 	}
 	if conf.Translate.Enable {
-		ts =  translateClient.New()
+		ts = translateClient.New()
 		err := ts.InitTranslateApi(&conf.Translate)
 		if err != nil {
 			log.Errorf("Error init translate api, %s", err)

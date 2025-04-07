@@ -2,7 +2,7 @@ package config
 
 // Output returns the configuration of output
 type Output struct {
-	Path    string
+	Path string
 }
 
 type Input struct {
@@ -22,22 +22,23 @@ type DMMApi struct {
 }
 
 type Translate struct {
-	Enable      bool
-	ApiUrl      string
-	ApiKey      string
-	Model       string
-	Temparature float64
-	TopP        float64
-	MaxTokens   int64
+	Enable       bool
+	ApiUrl       string
+	ApiKey       string
+	Model        string
+	Temparature  float64
+	TopP         float64
+	MaxTokens    int64
+	FreqPenalty  float64
 	SystemPrompt string
 }
 
 // Configs ...
 type Configs struct {
-	Input  Input
-	Output Output
-	Proxy  Proxy
-	DMMApi DMMApi
+	Input     Input
+	Output    Output
+	Proxy     Proxy
+	DMMApi    DMMApi
 	Translate Translate
 }
 
@@ -48,7 +49,7 @@ func Default() *Configs {
 			Path: ".",
 		},
 		Output: Output{
-			Path:    "output/{year}/{num}",
+			Path: "output/{year}/{num}",
 		},
 		Proxy: Proxy{
 			Enable: false,
@@ -59,13 +60,14 @@ func Default() *Configs {
 			AffiliateId: "",
 		},
 		Translate: Translate{
-			Enable: false,
-			ApiUrl: "",
-			ApiKey: "",
-			Model: "",
-			Temparature: 0.0,
-			TopP: 0.0,
-			MaxTokens: 0,
+			Enable:       false,
+			ApiUrl:       "",
+			ApiKey:       "",
+			Model:        "",
+			Temparature:  0.0,
+			TopP:         0.0,
+			MaxTokens:    0,
+			FreqPenalty:  0.0,
 			SystemPrompt: "",
 		},
 	}
