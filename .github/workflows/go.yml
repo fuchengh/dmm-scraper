@@ -1,7 +1,8 @@
 name: Build and Release Go Binaries
 on:
     push:
-        branches: [ "master" ]
+        tags:
+            - "v*"
 jobs:
     build:
         name: Build Release Assets
@@ -17,8 +18,8 @@ jobs:
 
             - name: Build binaries
               run: |
-                  GOOS=linux GOARCH=amd64 go build -o bin/jav-scraper-linux-amd64
-                  GOOS=windows GOARCH=amd64 go build -o bin/jav-scraper-windows-amd64.exe
+                  GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-w -s' -o bin/jav-scraper-linux-amd64
+                  GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-w -s' -o bin/jav-scraper-windows-amd64.exe
 
             - name: Create Release
               uses: softprops/action-gh-release@v1
