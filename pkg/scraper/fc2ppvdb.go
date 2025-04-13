@@ -144,17 +144,17 @@ func (s *Fc2PPVDbScraper) GetNumber() string {
 	}
 	rawTitle := s.doc.Find("title").Text()
 	if rawTitle == "" {
-		log.Errorf("Title not found for %s", s.GetFormatNumber())
+		log.Errorf("Title not found for")
 		return ""
 	}
 	fc2Id := strings.Split(rawTitle, " ")[0]
 	if fc2Id == "" {
-		log.Errorf("FC2 ID not found for %s", s.GetFormatNumber())
+		log.Errorf("FC2 ID not found for")
 		return ""
 	}
 	movieId := strings.Split(fc2Id, "-")
 	if len(movieId) < 2 {
-		log.Errorf("FC2 ID not found for %s", s.GetFormatNumber())
+		log.Errorf("FC2 ID not found for")
 		return ""
 	}
 	return movieId[1]
