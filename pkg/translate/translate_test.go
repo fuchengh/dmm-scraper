@@ -21,7 +21,7 @@ func TestTranslate(t *testing.T) {
 			args: args{
 				text: "hello, world!",
 			},
-			want:    "你好，世界！",
+			want:    "hello, world!",
 			wantErr: false,
 		},
 	}

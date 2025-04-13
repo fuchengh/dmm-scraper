@@ -10,7 +10,7 @@ func TestFc2Scraper_FetchDoc(t *testing.T) {
 		{
 			name: "fetchDoc expects no error",
 			args: args{
-				query: "1027251",
+				query: "4354904",
 			},
 			wantErr: false,
 		},

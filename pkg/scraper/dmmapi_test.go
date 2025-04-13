@@ -22,6 +22,9 @@ func TestDMMApiScraper_FetchDoc(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	if dmmProductService == nil {
+		t.Skip("DMMApi.ApiId or DMMApi.AffiliateId is empty")
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &DMMApiDigitalScraper{}
