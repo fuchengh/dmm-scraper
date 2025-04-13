@@ -171,7 +171,7 @@ func GetOutputPath(s Scraper, conf string) string {
 		actorDir := strings.Join(actorList, ",")
 		p = strings.Replace(p, "{actor}", actorDir, 1)
 	} else {
-		p = strings.Replace(p, "{actor}", "", 1)
+		p = strings.Replace(p, "{actor}", "#未知女優", 1)
 	}
 	p = strings.Replace(p, "{maker}", s.GetMaker(), 1)
 	p = strings.Replace(p, "{num}", s.GetFormatNumber(), 1)

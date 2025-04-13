@@ -26,6 +26,7 @@ type EmbyMovie struct {
 	Num           string           `xml:"num"`
 	Cover         string           `xml:"cover"`
 	Website       string           `xml:"website"`
+	Mpaa          string           `xml:"mpaa"`
 	// Ratings   *EmbyMovieRatings `xml:"ratings,omitempty"`
 }
 
@@ -105,5 +106,6 @@ func NewMovieNfo(s scraper.Scraper) MovieNfo {
 		Cover:         s.GetCover(),
 		Num:           s.GetNumber(),
 		Website:       s.GetWebsite(),
+		Mpaa:          "R",
 	}
 }

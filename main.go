@@ -153,7 +153,7 @@ func main() {
 				// mkdir
 				outputPath := scraper.GetOutputPath(s, conf.Output.Path)
 				log.Debugf("%s making output path: %s", s.GetType(), outputPath)
-				err = os.MkdirAll(outputPath, 0700)
+				err = os.MkdirAll(outputPath, 0755)
 				if err != nil && !os.IsExist(err) {
 					log.Error(err)
 					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
@@ -274,7 +274,7 @@ func MoveFailedFile(sourcePath, destPath string, moveFail bool) error {
 
     // Check if destination directory exists, create if not exist
     if _, err := os.Stat(destDir); os.IsNotExist(err) {
-        err = os.MkdirAll(destDir, os.ModePerm)
+        err = os.MkdirAll(destDir, 0755)
         if err != nil {
             return err
         }
