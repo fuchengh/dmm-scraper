@@ -21,8 +21,6 @@ func TestFc2PPVDbScraper_FetchDoc(t *testing.T) {
 			}
 			got := s.GetNumber()
 			t.Logf("GetNumber() = %v", got)
-			got = s.GetPlot()
-			t.Logf("GetPlot() = %v", got)
 			got = s.GetTitle()
 			t.Logf("GetTitle() = %v", got)
 			got = s.GetCover()
