@@ -66,6 +66,7 @@ func MyProgress(l logger.Logger, sType, filename string) func(info req.DownloadI
 
 func collectVideoFiles(root string, ignored []string) ([]VideoFile, error) {
 	var files []VideoFile
+	ignored = append(ignored, "Failed") // auto-ignore "Failed" directory
 
 	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
@@ -121,9 +122,10 @@ func main() {
 	log.Infof("============== Found %d video files ==============", len(files))
 
 	for _, f := range files {
-		ext := filepath.Ext(f.Entry.Name())
 		log.Infof("-------- Processing movie ID: %s --------", f.Entry.Name())
+		ext := filepath.Ext(f.Entry.Name())
 		name := strings.TrimSuffix(f.Entry.Name(), ext)
+		failedPath := path.Join(conf.Input.Path, "Failed", f.Entry.Name())
 
 		// 用正则处理文件名
 		if query, scrapers := scraper.GetQuery(name); query != "" {
@@ -135,11 +137,13 @@ func main() {
 				err = s.FetchDoc(query)
 				if err != nil {
 					log.Error(err)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					continue
 				}
 
 				if s.GetNumber() == "" {
 					log.Errorf("%s get num empty", s.GetType())
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					continue
 				}
 
@@ -152,6 +156,7 @@ func main() {
 				err = os.MkdirAll(outputPath, 0700)
 				if err != nil && !os.IsExist(err) {
 					log.Error(err)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
 
@@ -167,6 +172,7 @@ func main() {
 				err = scraper.Download(s.GetCover(), coverPath, MyProgress(log, s.GetType(), cover))
 				if err != nil {
 					log.Error(err)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
 				// Get poster
@@ -181,6 +187,7 @@ func main() {
 					err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
 					if err != nil {
 						log.Errorf("Failed to get poster: %v", err)
+						MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 						break
 					}
 				}
@@ -190,6 +197,7 @@ func main() {
 				err = movieNfo.Save(nfo)
 				if err != nil {
 					log.Error(err)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
 
@@ -197,6 +205,7 @@ func main() {
 				fileExist := path.Join(outputPath, f.Entry.Name())
 				if _, err := os.Stat(fileExist); err == nil {
 					log.Infof("%s file already exist: %s, skip moving", s.GetType(), fileExist)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
 
@@ -204,6 +213,7 @@ func main() {
 				err = MoveFile(f.Path, outputPath, num, 1)
 				if err != nil {
 					log.Error(err)
+					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
 
@@ -253,4 +263,27 @@ func getPosterWidth(fanartPath string, ratio float64) (height int, width int) {
 		return posterW, posterH
 	}
 	return 378, 0
+}
+
+func MoveFailedFile(sourcePath, destPath string, moveFail bool) error {
+	if !moveFail {
+		return nil
+	}
+    // Get the directory part of the destination path
+    destDir := filepath.Dir(destPath)
+
+    // Check if destination directory exists, create if not exist
+    if _, err := os.Stat(destDir); os.IsNotExist(err) {
+        err = os.MkdirAll(destDir, os.ModePerm)
+        if err != nil {
+            return err
+        }
+    }
+
+    // Move the file
+    err := os.Rename(sourcePath, destPath)
+    if err != nil {
+        return err
+    }
+    return nil
 }

@@ -3,6 +3,7 @@
 [input]
 path = "."
 ignored = ["ignored", "output"]
+moveFail = true
 
 [output]
 path = 'output/{year}/{num}'

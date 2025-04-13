@@ -36,7 +36,7 @@ func GetQuery(name string) (query string, scrapers []Scraper) {
 	case isFC2:
 		match, _ := typeFC2.FindStringMatch(name)
 		query = match.String()
-		scrapers = append(scrapers, &Fc2Scraper{})
+		scrapers = append(scrapers, &Fc2PPVDbScraper{}, &Fc2Scraper{})
 	case isMGStage:
 		match, _ := typeMGStage.FindStringMatch(name)
 		query = match.String()

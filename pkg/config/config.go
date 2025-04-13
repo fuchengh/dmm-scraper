@@ -8,6 +8,7 @@ type Output struct {
 type Input struct {
 	Path string
 	Ignored []string
+	MoveFail bool
 }
 
 // Proxy returns the configuration of proxy
