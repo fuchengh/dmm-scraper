@@ -2,10 +2,10 @@
 
 [input]
 path = "."
+ignored = ["ignored", "output"]
 
 [output]
 path = 'output/{year}/{num}'
-needCut = true
 
 [proxy]
 ## proxy [socks5://][127.0.0.1:]<1-65535>;

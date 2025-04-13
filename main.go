@@ -22,16 +22,19 @@ var (
 	ratio = 1.42
 )
 
-func isValidVideo(ext string) bool {
-	switch strings.ToLower(ext) {
-	case
-		".wmv",
-		".mp4",
-		".avi",
-		".mkv":
+type VideoFile struct {
+	Entry os.DirEntry
+	Path string
+}
+
+func IsVideo(entry os.DirEntry) bool {
+	ext := filepath.Ext(entry.Name())
+	switch ext {
+	case ".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv":
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 func MyProgress(l logger.Logger, sType, filename string) func(info req.DownloadInfo) {
@@ -61,6 +64,42 @@ func MyProgress(l logger.Logger, sType, filename string) func(info req.DownloadI
 	}
 }
 
+func collectVideoFiles(root string, ignored []string) ([]VideoFile, error) {
+	var files []VideoFile
+
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip ignored directories
+		if entry.IsDir() {
+			for _, ig := range ignored {
+				if strings.EqualFold(entry.Name(), ig) {
+					return filepath.SkipDir
+				}
+			}
+			return nil
+		}
+
+		if IsVideo(entry) {
+			files = append(files, VideoFile{
+				Entry: entry,
+				Path:  path,
+			})
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error walking directory: %v", err)
+	}
+
+	return files, nil
+}
+
+
 func main() {
 	var err error
 	log := logger.New()
@@ -74,21 +113,17 @@ func main() {
 
 	scraper.Setup(conf)
 
-	files, err := os.ReadDir(conf.Input.Path)
+	files, err := collectVideoFiles(conf.Input.Path, conf.Input.Ignored)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, f := range files {
-		if f.IsDir() {
-			continue
-		}
-		ext := filepath.Ext(f.Name())
-		if !isValidVideo(ext) {
-			continue
-		}
 
-		log.Infof("-------- Found movie ID: %s --------", f.Name())
-		name := strings.TrimSuffix(f.Name(), ext)
+	log.Infof("============== Found %d video files ==============", len(files))
+
+	for _, f := range files {
+		ext := filepath.Ext(f.Entry.Name())
+		log.Infof("-------- Processing movie ID: %s --------", f.Entry.Name())
+		name := strings.TrimSuffix(f.Entry.Name(), ext)
 
 		// 用正则处理文件名
 		if query, scrapers := scraper.GetQuery(name); query != "" {
@@ -159,16 +194,14 @@ func main() {
 				}
 
 				// do not move if file is already exist
-				fileExist := path.Join(outputPath, f.Name())
+				fileExist := path.Join(outputPath, f.Entry.Name())
 				if _, err := os.Stat(fileExist); err == nil {
 					log.Infof("%s file already exist: %s, skip moving", s.GetType(), fileExist)
 					break
 				}
 
 				log.Debugf("%s moving video file to: %s", s.GetType(), outputPath)
-				// if file exist no overwrite
-				filePath := path.Join(conf.Input.Path, f.Name())
-				err = MoveFile(filePath, outputPath, num, 1)
+				err = MoveFile(f.Path, outputPath, num, 1)
 				if err != nil {
 					log.Error(err)
 					break

@@ -7,6 +7,7 @@ type Output struct {
 
 type Input struct {
 	Path string
+	Ignored []string
 }
 
 // Proxy returns the configuration of proxy
