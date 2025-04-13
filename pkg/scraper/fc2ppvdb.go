@@ -142,8 +142,22 @@ func (s *Fc2PPVDbScraper) GetNumber() string {
 	if s.doc == nil {
 		return ""
 	}
-	id := strings.Split(strings.Split(s.doc.Find("title").Text(), " ")[0], "-")[1]
-	return id
+	rawTitle := s.doc.Find("title").Text()
+	if rawTitle == "" {
+		log.Errorf("Title not found for %s", s.GetFormatNumber())
+		return ""
+	}
+	fc2Id := strings.Split(rawTitle, " ")[0]
+	if fc2Id == "" {
+		log.Errorf("FC2 ID not found for %s", s.GetFormatNumber())
+		return ""
+	}
+	movieId := strings.Split(fc2Id, "-")
+	if len(movieId) < 2 {
+		log.Errorf("FC2 ID not found for %s", s.GetFormatNumber())
+		return ""
+	}
+	return movieId[1]
 }
 
 func (s *Fc2PPVDbScraper) GetCover() string {
