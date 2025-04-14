@@ -164,7 +164,7 @@ func GetOutputPath(s Scraper, conf string) string {
 		for _, actor := range actors {
 			actorList = append(actorList, actor)
 			if len(actorList) >= 5 {
-				actorList = append(actorList, "...")
+				actorList = append(actorList, "…")
 				break
 			}
 		}
