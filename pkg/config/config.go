@@ -6,8 +6,8 @@ type Output struct {
 }
 
 type Input struct {
-	Path string
-	Ignored []string
+	Path     string
+	Ignored  []string
 	MoveFail bool
 }
 

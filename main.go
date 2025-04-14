@@ -24,7 +24,7 @@ var (
 
 type VideoFile struct {
 	Entry os.DirEntry
-	Path string
+	Path  string
 }
 
 func IsVideo(entry os.DirEntry) bool {
@@ -59,7 +59,7 @@ func MyProgress(l logger.Logger, sType, filename string) func(info req.DownloadI
 			return
 		}
 
-		percentage := float64(current * 100 / total) 
+		percentage := float64(current * 100 / total)
 		bar.Set64(int64(percentage))
 	}
 }
@@ -100,7 +100,6 @@ func collectVideoFiles(root string, ignored []string) ([]VideoFile, error) {
 	return files, nil
 }
 
-
 func main() {
 	var err error
 	log := logger.New()
@@ -113,6 +112,7 @@ func main() {
 	}
 
 	scraper.Setup(conf)
+	imgOperation := img.NewOperation()
 
 	files, err := collectVideoFiles(conf.Input.Path, conf.Input.Ignored)
 	if err != nil {
@@ -164,11 +164,16 @@ func main() {
 				movieNfo := metadata.NewMovieNfo(s)
 				cover := fmt.Sprintf("%s-fanart.jpg", num)
 				poster := fmt.Sprintf("%s-poster.jpg", num)
-				// movieNfo.SetTitle(num)
+				cropped := fmt.Sprintf("%s-cropped.jpg", num)
 
 				// Get fanart and poster
 				coverPath := path.Join(outputPath, cover)
 				posterPath := path.Join(outputPath, poster)
+				croppedPath := path.Join(outputPath, cropped)
+				// calculate posterWidth based on cover width
+				posterWidth, _ := getPosterWidth(coverPath, ratio)
+
+				// Get cover
 				err = scraper.Download(s.GetCover(), coverPath, MyProgress(log, s.GetType(), cover))
 				if err != nil {
 					log.Error(err)
@@ -181,12 +186,18 @@ func main() {
 				if err != nil || !img.ValidPosterProportion(posterPath) {
 					// fallback to crop from cover
 					log.Warnf("%s failed to fetch cover, crop from fanart", s.GetType())
-					imgOperation := img.NewOperation()
-					// calculate posterWidth based on cover width
-					posterWidth, _ := getPosterWidth(coverPath, ratio)
 					err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
 					if err != nil {
 						log.Errorf("Failed to get poster: %v", err)
+						MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
+						break
+					}
+				} else {
+					// successfully get poster from website, also crop from cover in case poster is not in correct proportion
+					log.Debugf("%s successfully get poster from website, crop from fanart", s.GetType())
+					err = imgOperation.CropAndSave(coverPath, croppedPath, posterWidth, 0)
+					if err != nil {
+						log.Errorf("Failed to crop poster: %v", err)
 						MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 						break
 					}
@@ -269,21 +280,21 @@ func MoveFailedFile(sourcePath, destPath string, moveFail bool) error {
 	if !moveFail {
 		return nil
 	}
-    // Get the directory part of the destination path
-    destDir := filepath.Dir(destPath)
+	// Get the directory part of the destination path
+	destDir := filepath.Dir(destPath)
 
-    // Check if destination directory exists, create if not exist
-    if _, err := os.Stat(destDir); os.IsNotExist(err) {
-        err = os.MkdirAll(destDir, 0755)
-        if err != nil {
-            return err
-        }
-    }
+	// Check if destination directory exists, create if not exist
+	if _, err := os.Stat(destDir); os.IsNotExist(err) {
+		err = os.MkdirAll(destDir, 0755)
+		if err != nil {
+			return err
+		}
+	}
 
-    // Move the file
-    err := os.Rename(sourcePath, destPath)
-    if err != nil {
-        return err
-    }
-    return nil
+	// Move the file
+	err := os.Rename(sourcePath, destPath)
+	if err != nil {
+		return err
+	}
+	return nil
 }
