@@ -170,8 +170,6 @@ func main() {
 				coverPath := path.Join(outputPath, cover)
 				posterPath := path.Join(outputPath, poster)
 				croppedPath := path.Join(outputPath, cropped)
-				// calculate posterWidth based on cover width
-				posterWidth, _ := getPosterWidth(coverPath, ratio)
 
 				// Get cover
 				err = scraper.Download(s.GetCover(), coverPath, MyProgress(log, s.GetType(), cover))
@@ -180,6 +178,9 @@ func main() {
 					MoveFailedFile(f.Path, failedPath, conf.Input.MoveFail)
 					break
 				}
+				// Get posterWidth after we get cover
+				posterWidth, _ := getPosterWidth(coverPath, ratio)
+
 				// Get poster
 				// first, check if we can get poster from website
 				err = scraper.Download(s.GetPoster(), posterPath, MyProgress(log, s.GetType(), poster))
@@ -254,10 +255,12 @@ func MoveFile(oldPath, outputPath, num string, index int) error {
 }
 
 func getPosterWidth(fanartPath string, ratio float64) (height int, width int) {
-	if reader, err := os.Open(fanartPath); err == nil {
+	reader, err := os.Open(fanartPath)
+	if err == nil {
 		defer reader.Close()
 		im, _, err := image.Decode(reader)
 		if err != nil {
+			fmt.Println("Error decoding image:", err)
 			return 378, 0
 		}
 
@@ -273,6 +276,7 @@ func getPosterWidth(fanartPath string, ratio float64) (height int, width int) {
 		}
 		return posterW, posterH
 	}
+	fmt.Println("Error opening image:", err)
 	return 378, 0
 }
 

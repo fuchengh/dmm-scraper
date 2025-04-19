@@ -53,8 +53,8 @@ func Setup(conf *config.Configs) {
 	if conf.DMMApi.ApiId != "" && conf.DMMApi.AffiliateId != "" {
 		dmmProductService = api.NewProductService(conf.DMMApi.AffiliateId, conf.DMMApi.ApiId)
 	}
+	ts = translateClient.New()
 	if conf.Translate.Enable {
-		ts = translateClient.New()
 		err := ts.InitTranslateApi(&conf.Translate)
 		if err != nil {
 			log.Errorf("Error init translate api, %s", err)
