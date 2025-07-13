@@ -111,6 +111,7 @@ func (s *DMMScraper) FetchDoc(query string) (err error) {
 	for _, href := range hrefs {
 		if isURLMatchQuery(href, query) {
 			detail = href
+			break;
 		}
 	}
 	if detail == "" {
@@ -282,10 +283,10 @@ func (s *DMMScraper) GetActors() (actors []string) {
 	}
 	// if actors list is empty, fallback to av-wiki
 	if len(actors) == 0 {
-		log.Warnf("No actors found in DMM, trying av-wiki for %s", s.GetFormatNumber())
+		log.Infof("No actors found in DMM, trying av-wiki for %s", s.GetFormatNumber())
 		actors = fetchAvWikiActors(s.GetFormatNumber())
 		if len(actors) == 0 {
-			log.Infof("No actors found in av-wiki for %s", s.GetFormatNumber())
+			log.Warnf("No actors found in av-wiki for %s", s.GetFormatNumber())
 		} else {
 			log.Infof("Found actors in av-wiki for %s, total: %d", s.GetFormatNumber(), len(actors))
 		}

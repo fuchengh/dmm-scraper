@@ -186,7 +186,7 @@ func main() {
 				err = scraper.Download(s.GetPoster(), posterPath, MyProgress(log, s.GetType(), poster))
 				if err != nil || !img.ValidPosterProportion(posterPath) {
 					// fallback to crop from cover
-					log.Warnf("%s failed to fetch cover, crop from fanart", s.GetType())
+					log.Infof("%s failed to fetch the cover, cropping fanart for reference", s.GetType())
 					err = imgOperation.CropAndSave(coverPath, posterPath, posterWidth, 0)
 					if err != nil {
 						log.Errorf("Failed to get poster: %v", err)
@@ -195,7 +195,7 @@ func main() {
 					}
 				} else {
 					// successfully get poster from website, also crop from cover in case poster is not in correct proportion
-					log.Debugf("%s successfully get poster from website, crop from fanart", s.GetType())
+					log.Debugf("%s successfully get poster from website, cropping fanart for reference", s.GetType())
 					err = imgOperation.CropAndSave(coverPath, croppedPath, posterWidth, 0)
 					if err != nil {
 						log.Errorf("Failed to crop poster: %v", err)
