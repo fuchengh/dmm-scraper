@@ -280,6 +280,16 @@ func (s *DMMScraper) GetActors() (actors []string) {
 			actors = append(actors, s.Text())
 		})
 	}
+	// if actors list is empty, fallback to av-wiki
+	if len(actors) == 0 {
+		log.Warnf("No actors found in DMM, trying av-wiki for %s", s.GetFormatNumber())
+		actors = fetchAvWikiActors(s.GetFormatNumber())
+		if len(actors) == 0 {
+			log.Infof("No actors found in av-wiki for %s", s.GetFormatNumber())
+		} else {
+			log.Infof("Found actors in av-wiki for %s, total: %d", s.GetFormatNumber(), len(actors))
+		}
+	}
 	return
 }
 
